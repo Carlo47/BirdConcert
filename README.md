@@ -120,7 +120,11 @@ Let's combine several chirps to imitate different birds, e.g. the cuckoo.
     chirp(koo, koo, 1, 52, 1, 830);
     }
 ```
-This does not sound very natural, because the cuckoo does not call with square waves, but with almost pure sine tones.
+![Cuckoo](images/cuckoo.jpg)
+
+Start and end frequency of "cuc" as well as of "koo" are the same. Therefore, the two calls sound 2 * 46 * 1/740 = 124 ms and 2 * 52 * 1/554.3 = 188 ms long with a pause of 200 ms in between.
+
+This does not sound very natural, because the real cuckoo does not call with square waves, but with almost pure sine tones.
 
 ## Program Code
 There are 8 different "birds" implemented in the program, which are called to sing in random order. Maybe a reader programs an alarm clock which greets him in the morning with a bird concert.
