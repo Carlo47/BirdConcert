@@ -100,12 +100,12 @@ Chromatic chirp over one octave from 880 Hz to 440 Hz
 
 ![Chirp_3](images/chirp880440121011000_start.png)
 
-Zoomed in start of chromatic chirp, beginning with 880 Hz
+Zoomed in at start of chromatic chirp, beginning with 880 Hz
 ## --- 
 
 ![Chirp_3](images/chirp880440121011000_end.png)
 
-Zoomed in end of chromatic chirp, ending with 440 Hz
+Zoomed in at end of chromatic chirp, ending with 440 Hz
 ## --- 
 
 Let's combine several chirps to imitate different birds, e.g. the cuckoo.
