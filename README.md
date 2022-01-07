@@ -67,9 +67,9 @@ void chirp(uint32_t fStart, uint32_t fStop, int nSteps, int nPeriods, int nChirp
         delay(msPause);
     } 
 }
-
-The diagram below shows the generated frequencies with a chirp over 3 octaves from 440 Hz to 3520 Hz in 12 steps per octave.
 ```
+The diagram below shows the generated frequencies with a chirp over 3 octaves from 440 Hz to 3520 Hz in 12 steps per octave.
+
 ![Chirp_0](images/chirps_exp.jpg)
 
 ## Let's take a look at some function calls:
