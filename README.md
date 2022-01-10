@@ -17,7 +17,7 @@ A bird call, however, is not a sound of a single frequency, but a periodic chirp
 
 So the chirp function I want to design surely needs the parameters "start frequency" and "end frequency". Additionally I want to be able to define in how many steps the end frequency should be reached. And as already mentioned, I can specify how many periods the tone of a single frequency should consist of.
 
-I could do this by adding a small frequency difference at each step. However, it is easier to divide the frequency range into equal intervals, as in the chromatic scale, and multiply the frequency of successive notes by a constant factor. 
+I could do this by adding a small frequency difference at each step. However, it is also easy to divide the frequency range into equal intervals, as in the chromatic scale, and multiply the frequency of successive notes by a constant factor. 
 
 A chirp function that sweeps a certain frequency range once in n steps could therefore look like this:
 ```
@@ -29,7 +29,7 @@ The whole conversion of frequencies into periods and the determination of the fr
 
 After all these considerations I decided to make the duty cycle variable as well (1 .. 99%) and finally the chirp function looked like this:
 
-## Exponetial Chirp
+## Exponential Chirp
 Because successive frequencies are multiplied by a constant factor at each step, the frequencies increase exponentially.
 ```
 void chirp(uint32_t fStart, uint32_t fStop, int nSteps, int nPeriods, int nChirps, int duty, uint32_t msPause)
@@ -247,6 +247,129 @@ void phaser(uint32_t freq, int nPeriods, int dutyStart, int dutyEnd, int nChirps
   delay(msPause);    
 }
 ```
+---
+## Generalized Chirp
+I was about to finish the  *birdsong* project when I took another look at the various chirp functions. Actually they all do the same, they only differ in how the chirp frequencies are generated. It must be possible to add another parameter "frequency generator" to the basic function and to program only different **frequency generators**. So let's define a type for the frequency generator function:
+```
+typedef double (*FreqGen)(int stepNbr, double fStart, double fStop, int nSteps);
+```
+The generalized chirp function now looks like this:
+```
+void chirp(double fStart, double fStop, int nSteps, int nPeriods, int nChirps, FreqGen f, int duty, uint32_t msPause)
+{
+    auto buz = [](uint32_t usTon, uint32_t usToff){
+      digitalWrite(PIN_BUZZER, HIGH);
+      delayMicroseconds(usTon);
+      digitalWrite(PIN_BUZZER, LOW);
+      delayMicroseconds(usToff);};
+
+  for (int n = 0; n < nChirps; n++) // output nChirps
+  {
+    for (int s = 0; s <= nSteps; s++)
+    {
+      double fNext = f(s, fStart, fStop, nSteps);  //🔴 calling the frequency generator
+
+      double p = 1000000.0 / fNext;      // calculate the period
+      uint32_t tOn  = p * duty / 100.0;  // calculate on and off time
+      uint32_t tOff = p - tOn;
+      //log_i("%2d: f = %5.2f, ton = %d, toff = %d", s, fNext, tOn, tOff);
+      for (int n = 0; n < nPeriods; n++) buz(tOn, tOff);
+    }
+    delay(msPause);
+  }
+}
+```
+Now we only have to program the generators for exponential and sinusoidal frequency change. We remove the phase shift by Pi/2 introduced in the function chirp_sinus and code a cosine generator instead, which gives the same result.
+### Generator for exponentially (chromatically) varying frequencies
+```
+double chromaticScale(int stepNbr, double fStart, double fStop,int nSteps)
+{
+    // We calculate the multiplicator k to get fStop in nSteps
+    // fStop = fStart * k ^ nSteps
+    double k = log(fStop / fStart) / (double)nSteps;  
+    double fNext = fStart * exp(k * stepNbr);
+    return fNext;
+}
+```
+### Generator for frequencies following a sine
+```
+double sinusScale(int stepNbr, double fStart, double fStop,int nSteps)
+{
+  double fm = (fStart + fStop) / 2.0;  // arithmetic mean
+  double fa = (fStop - fStart) / 2.0;  // max. frequency swing around fm
+  const double k = TWO_PI / nSteps;
+  double fNext = fm + fa * sin(k * stepNbr); // get next frequency
+  return fNext;
+}
+```
+### Generator for frequencies following a cosine
+```
+double cosinusScale(int stepNbr, double fStart, double fStop,int nSteps)
+{
+  double fm = (fStart + fStop) / 2.0;  // arithmetic mean
+  double fa = (fStop - fStart) / 2.0;  // max. frequency swing around fm
+  const double k = TWO_PI / nSteps;
+  double fNext = fm + fa * cos(k * stepNbr); // get next frequency
+  return fNext;
+}
+```
+And here are 2 more generators, one linear and another that follows the atan function.
+### Generator for linearly varying frequencies
+```
+double linearScale(int stepNbr, double fStart, double fStop,int nSteps)
+{
+  double k = (fStop - fStart) / nSteps;
+  double fNext = fStart + k * stepNbr;
+  return fNext;
+}
+```
+![Chirp_Linear](images/chirp_linear.jpg)
+
+---
+
+### Generator for frequencies following an arctan
+The step range is maped to the interval 0 ... Pi.
+
+```
+double atanScale(int stepNbr, double fStart, double fStop,int nSteps)
+{
+  double k = (fStop - fStart)/atan(PI);
+  double fNext = fStart + k * atan(PI/nSteps * stepNbr);
+  return fNext;
+}
+```
+![Chirp_Atan](images/chirp_atan.jpg)
+
+---
+
+## Summary
+We have implemented a universal chirp function that can generate frequencies that follow a mathemathical specification.
+For comparison, we call all generators and plot the generated frequencies all together in one diagram. The first diagram shows the frequencies when fStart is smaller than fStop. The frequency range is swept in 5 steps.
+```
+  double fStart = 1000;
+  double fStop  = 3000;
+
+  chirp(fStart, fStop, 5, 30, 1, linearScale,    50, 100);
+  chirp(fStart, fStop, 5, 30, 1, chromaticScale, 50, 100);
+  chirp(fStart, fStop, 5, 30, 1, sinusScale,     50, 100);
+  chirp(fStart, fStop, 5, 30, 1, cosinusScale,   50, 100);
+  chirp(fStart, fStop, 5, 30, 1, atanScale,      50, 100);
+```  
+![Chirp_All_Up](images/chirp_all_up.jpg)
+
+---
+
+The second diagram shows the frequencies when fStart and fStop are swapped.
+```
+  chirp(fStop, fStart, 5, 30, 1, linearScale,    50, 100); 
+  chirp(fStop, fStart, 5, 30, 1, chromaticScale, 50, 100);
+  chirp(fStop, fStart, 5, 30, 1, sinusScale,     50, 100);
+  chirp(fStop, fStart, 5, 30, 1, cosinusScale,   50, 100);
+  chirp(fStop, fStart, 5, 30, 1, atanScale,      50, 100);
+```
+![Chirp_All_Down](images/chirp_all_down.jpg)
+
+---
 
 ## Program Code
 There are several "birds" implemented in the program, which are called to sing in random order. Maybe a reader programs an alarm clock which greets him in the morning with a bird concert.
