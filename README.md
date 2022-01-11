@@ -242,9 +242,9 @@ void phaser(uint32_t freq, int nPeriods, int dutyStart, int dutyEnd, int nChirps
         uint32_t tOn  = p * d / 100;
         uint32_t tOff = p - tOn;
         for (int n = 0; n < nPeriods; n++) buz(tOn, tOff);
-    } 
-  }
-  delay(msPause);    
+    }
+    delay(msPause); 
+  }    
 }
 ```
 ---
@@ -255,7 +255,7 @@ typedef double (*FreqGen)(int stepNbr, double fStart, double fStop, int nSteps);
 ```
 The generalized chirp function now looks like this:
 ```
-void chirp(double fStart, double fStop, int nSteps, int nPeriods, int nChirps, FreqGen f, int duty, uint32_t msPause)
+void chirp(double fStart, double fStop, int nSteps, int nPeriods, int nChirps, FreqGen fgen, int duty, uint32_t msPause)
 {
     auto buz = [](uint32_t usTon, uint32_t usToff){
       digitalWrite(PIN_BUZZER, HIGH);
@@ -267,7 +267,7 @@ void chirp(double fStart, double fStop, int nSteps, int nPeriods, int nChirps, F
   {
     for (int s = 0; s <= nSteps; s++)
     {
-      double fNext = f(s, fStart, fStop, nSteps);  //🔴 calling the frequency generator
+      double fNext = fgen(s, fStart, fStop, nSteps);  //🔴 calling the frequency generator
 
       double p = 1000000.0 / fNext;      // calculate the period
       uint32_t tOn  = p * duty / 100.0;  // calculate on and off time
@@ -280,6 +280,7 @@ void chirp(double fStart, double fStop, int nSteps, int nPeriods, int nChirps, F
 }
 ```
 Now we only have to program the generators for exponential and sinusoidal frequency change. We remove the phase shift by Pi/2 introduced in the function chirp_sinus and code a cosine generator instead, which gives the same result.
+
 ### Generator for exponentially (chromatically) varying frequencies
 ```
 double chromaticScale(int stepNbr, double fStart, double fStop,int nSteps)
