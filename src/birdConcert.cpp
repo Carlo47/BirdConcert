@@ -24,72 +24,22 @@
 #include <Arduino.h>
 
 const uint8_t PIN_BUZZER = GPIO_NUM_4;
-
-
-void phaser(uint32_t freq, int nPeriods, int dutyStart, int dutyEnd, int nChirps, uint32_t msPause)
-{
-  uint32_t p = 1000000/freq;
-
-  auto buz = [](uint32_t usTon, uint32_t usToff){
-      digitalWrite(PIN_BUZZER, HIGH);
-      delayMicroseconds(usTon);
-      digitalWrite(PIN_BUZZER, LOW);
-      delayMicroseconds(usToff);};
-  for (int n = 0; n < nChirps; n++) // output nChirps
-  {
-    for (int d = dutyStart; d <= dutyEnd; d++)
-    {
-        uint32_t tOn  = p * d / 100;
-        uint32_t tOff = p - tOn;
-        for (int n = 0; n < nPeriods; n++) buz(tOn, tOff);
-    } 
-  }
-  delay(msPause);    
-}
-
 typedef double (*FreqGen)(int stepNbr, double fStart, double fStop,int nSteps);
 
-double linearScale(int stepNbr, double fStart, double fStop,int nSteps)
-{
-  double df = (fStop - fStart) / nSteps;
-  double fNext = fStart + stepNbr * df;
-  return fNext;
-}
-
-double chromaticScale(int stepNbr, double fStart, double fStop,int nSteps)
-{
-    // We calculate the multiplicator k to get fStop in nSteps
-    // fStop = fStart * k ^ nSteps
-    double k = log(fStop / fStart) / (double)nSteps;  
-    double fNext = fStart * exp(k * stepNbr);
-    return fNext;
-}
-
-double sinusScale(int stepNbr, double fStart, double fStop,int nSteps)
-{
-  double fm = (fStart + fStop) / 2.0;  // arithmetic mean
-  double fa = (fStop - fStart) / 2.0;  // max. frequency swing around fm
-  const double k = TWO_PI / nSteps;
-  double fNext = fm + fa * sin(k * stepNbr); // get next frequency
-  return fNext;
-}
-
-double cosinusScale(int stepNbr, double fStart, double fStop,int nSteps)
-{
-  double fm = (fStart + fStop) / 2.0;  // arithmetic mean
-  double fa = (fStop - fStart) / 2.0;  // max. frequency swing around fm
-  const double k = TWO_PI / nSteps;
-  double fNext = fm + fa * cos(k * stepNbr); // get next frequency
-  return fNext;
-}
-
-double atanScale(int stepNbr, double fStart, double fStop,int nSteps)
-{
-  double k = (fStop - fStart)/atan(PI);
-  double fNext = fStart + k * atan(PI/nSteps * stepNbr);
-  return fNext;
-}
-
+/**
+ * Simulate the chirp of a bird. Start with fStart and reach fStop in n steps.
+ * Each individual frequency is composed of n periods. freq(i) = k * freq(i-1)
+ * The duty cycle of the square wave determines the timbre of the generated tone.  
+ * 
+ * fStart    Chirp starts with this frequency
+ * fStop     Chirp ends   with this frequency
+ * nSteps    The frequency interval is divided into n steps 
+ * nPeriods  Every frequency contains n periods
+ * nChirps   n chirps are played
+ * fgen      frequency generator to step through the frequency range
+ * duty      duty cycle (1..99 %) of a period 
+ * msPause   ms Pause between chirps
+ */
 void chirp(double fStart, double fStop, int nSteps, int nPeriods, int nChirps, FreqGen fgen, int duty, uint32_t msPause)
 {
     auto buz = [](uint32_t usTon, uint32_t usToff){
@@ -113,6 +63,81 @@ void chirp(double fStart, double fStop, int nSteps, int nPeriods, int nChirps, F
   }
 }
 
+/**
+ * Generates n periods of a square wave of frequency freq and varies its 
+ * duty cycle from dutyStart to dutyEnd in steps of 1 %
+ * 
+ * freq         Frequency of square wave
+ * nPeriods     n periods per for each duty cycle
+ * dutyStart    minimum duty cycle
+ * dutyEnd      maximum duty cycle
+ * nChirps      n chirps are generated
+ * msPause      ms to wait after each chirp
+ */
+void phaser(uint32_t freq, int nPeriods, int dutyStart, int dutyEnd, int nChirps, uint32_t msPause)
+{
+  uint32_t p = 1000000/freq;
+
+  auto buz = [](uint32_t usTon, uint32_t usToff){
+      digitalWrite(PIN_BUZZER, HIGH);
+      delayMicroseconds(usTon);
+      digitalWrite(PIN_BUZZER, LOW);
+      delayMicroseconds(usToff);};
+
+  for (int n = 0; n < nChirps; n++) // output nChirps
+  {
+    for (int d = dutyStart; d <= dutyEnd; d++)
+    {
+        uint32_t tOn  = p * d / 100;
+        uint32_t tOff = p - tOn;
+        for (int n = 0; n < nPeriods; n++) buz(tOn, tOff);
+    } 
+    delay(msPause);
+  }    
+}
+
+double linearScale(int stepNbr, double fStart, double fStop,int nSteps)
+{
+  double df = (fStop - fStart) / nSteps;
+  double fNext = fStart + stepNbr * df;
+  return fNext;
+}
+
+double chromaticScale(int stepNbr, double fStart, double fStop,int nSteps)
+{
+    // We calculate the multiplicator k to get fStop in nSteps
+    // fStop = fStart * k ^ nSteps
+    double k = log(fStop / fStart) / (double)nSteps;  
+    double fNext = fStart * exp(k * stepNbr);
+    return fNext;
+}
+
+double sineScale(int stepNbr, double fStart, double fStop,int nSteps)
+{
+  double fm = (fStart + fStop) / 2.0;  // arithmetic mean
+  double fa = (fStop - fStart) / 2.0;  // max. frequency swing around fm
+  const double k = TWO_PI / nSteps;
+  double fNext = fm + fa * sin(k * stepNbr); // get next frequency
+  return fNext;
+}
+
+double cosineScale(int stepNbr, double fStart, double fStop,int nSteps)
+{
+  double fm = (fStart + fStop) / 2.0;  // arithmetic mean
+  double fa = (fStop - fStart) / 2.0;  // max. frequency swing around fm
+  const double k = TWO_PI / nSteps;
+  double fNext = fm + fa * cos(k * stepNbr); // get next frequency
+  return fNext;
+}
+
+double atanScale(int stepNbr, double fStart, double fStop,int nSteps)
+{
+  double k = (fStop - fStart)/atan(PI);
+  double fNext = fStart + k * atan(PI/nSteps * stepNbr);
+  return fNext;
+}
+
+
 typedef void (*bird)();  // bird is a pointer to a function taking no parameters and returning void
 
 // Define some birds with different chirps
@@ -120,7 +145,7 @@ void bird0()
 {
     chirp(random(1200, 1900), random(4300, 4500), random(10, 42), random(1,5), 5, chromaticScale, 50, random(59, 199));
     chirp(random(2000, 2050), random(3200, 3400), random(5, 30),  random(2,15), random(4, 10), atanScale, 50, 20 );
-    chirp(1500, 4500, random(50, 150), random(1, 13), random(1, 5), sinusScale, 50, 100);
+    chirp(1500, 4500, random(50, 100), random(1, 13), random(1, 5), sineScale, 50, 100);
 }
 
 void bird1()
@@ -130,8 +155,8 @@ void bird1()
 
 void bird2()
 {
-    chirp(random(3500,3900), random(5600,5900), random(2,5), random(2,6), 1, sinusScale, 50, random(50, 100));
-    chirp(random(5600,5900), random(3500,3900), random(6,15), random(3,7), 1, cosinusScale, 50, random(50, 100));
+    chirp(random(3500,3900), random(5600,5900), random(3,7), random(5,10), 1, sineScale, 50, random(50, 100));
+    chirp(random(5600,5900), random(3500,3900), random(6,15), random(3,7), 1, cosineScale, 50, random(50, 100));
 };
 
 void bird3()
@@ -143,7 +168,7 @@ void bird4()
 {
     chirp(4000, 4800, 10, 4, random(10, 15), atanScale, 50, 20);
     chirp(3500, 4300, 15, 10, 1, atanScale, 50, 20);
-    chirp(3500, 3000, 25, 10, 1, sinusScale, 50, random(75, 150));
+    chirp(3500, 3000, 25, 10, 1, sineScale, 50, random(75, 150));
 };
 
  void bird5()
@@ -163,7 +188,7 @@ void bird4()
 
 void bird8()
 {
-    chirp(1320, 3880, 5, 10, 5, sinusScale, 50, 100);
+    chirp(1320, 3880, 5, 10, 5, sineScale, 50, 100);
 }
 
 void bird9()
@@ -180,17 +205,25 @@ void bird10()
 
 void cuckoo()
 {
-  const float minorThird = 1.335;
-  const float cuc = 739.989;          // F#5
-  const float koo = cuc / minorThird; // C#5
-
-  chirp(cuc, cuc, 1, 46, 1, chromaticScale, 50, 200);
-  chirp(koo, koo, 1, 52, 1, chromaticScale, 50, 830);
+  const float third = 1.222;     // minorThird = 1.18 ... majorThird = 1.25
+  const float cuc = 667;         //  E4
+  const float koo = cuc / third; // ~C#4
+  for (int i = 1; i < random(1,5); i++)
+  {
+    chirp(cuc, cuc, 1, 46, 1, linearScale, 50, 200);
+    chirp(koo, koo, 1, 52, 1, linearScale, 50, 830);
+  }
 }
 
 void raven()
 {
   chirp(75,65,8,4,random(2, 6), atanScale, 20, 350);
+}
+
+void signet()
+{
+  chirp(440, 1320, 6, 300, 1, cosineScale, 50, 1000);
+  chirp(1320, 440, 6, 300, 1, cosineScale, 50, 3000);
 }
 
 // Store the birds in an array
@@ -223,6 +256,7 @@ void setup()
 {
     Serial.begin(115200);
     pinMode(PIN_BUZZER, OUTPUT);
+    signet();
 }
 
 double fStart = 1000;
