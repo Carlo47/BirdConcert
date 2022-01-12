@@ -282,30 +282,50 @@ void setup()
     signet();
 }
 
-double fStart = 1000;
-double fStop  = 3000;
-int nSteps = 20;
-int nPeriods = 30;
-
 void loop()
 {
   birdConcert(random(1000, 5000));
   printf("\n");
 
   /*
-  chirp(fStart, fStop, nSteps, nPeriods, 1, chromaticScale, 50, 1000);
-  chirp(fStop, fStart, nSteps, nPeriods, 1, chromaticScale, 50, 1000);
+  double fStart = 1000;
+  double fStop = 2100;
+  int nSteps = 5;
+  int nPeriods = 100;
+  int duty = 20;
+  uint32_t msPause = 10;
+  printf("linear\n");
+  chirp(fStart, fStop, nSteps, nPeriods, 1, linearScale, duty, msPause);
+  chirp(fStop, fStart, nSteps, nPeriods, 1, linearScale, duty, msPause);
 
-  chirp(fStart, fStop, nSteps, nPeriods, 1, linearScale,    50, 1000);
-  chirp(fStop, fStart, nSteps, nPeriods, 1, linearScale,    50, 1000);
+  printf("chromatic\n");
+  chirp(fStart, fStop, nSteps, nPeriods, 1, chromaticScale, duty, msPause);
+  chirp(fStop, fStart, nSteps, nPeriods, 1, chromaticScale, duty, msPause);
 
-  chirp(fStart, fStop, nSteps, nPeriods, 1, sinusScale,     50, 1000);
-  chirp(fStop, fStart, nSteps, nPeriods, 1, sinusScale,     50, 1000);
+  printf("sine2Pi\n");
+  chirp(fStart, fStop, nSteps, nPeriods, 1, sine2PiScale, duty, msPause);
+  chirp(fStop, fStart, nSteps, nPeriods, 1, sine2PiScale, duty, msPause);
 
-  chirp(fStart, fStop, nSteps, nPeriods, 1, cosinusScale,   50, 1000);
-  chirp(fStop, fStart, nSteps, nPeriods, 1, cosinusScale,   50, 1000);
+  printf("sinePi\n");
+  chirp(fStart, fStop, nSteps, nPeriods, 1, sinePiScale, duty, msPause);
+  chirp(fStop, fStart, nSteps, nPeriods, 1, sinePiScale, duty, msPause);
 
-  chirp(fStart, fStop, nSteps, nPeriods, 1, atanScale,      50, 1000);
-  chirp(fStop, fStart, nSteps, nPeriods, 1, atanScale,      50, 1000);
+  printf("cosine2Pi\n");
+  chirp(fStart, fStop, nSteps, nPeriods, 1, cosine2PiScale, duty, msPause);
+  chirp(fStop, fStart, nSteps, nPeriods, 1, cosine2PiScale, duty, msPause);
+
+  printf("cosinePi\n");
+  chirp(fStart, fStop, nSteps, nPeriods, 1, cosinePiScale, duty, msPause);
+  chirp(fStop, fStart, nSteps, nPeriods, 1, cosinePiScale, duty, msPause);
+
+  printf("atan2Pi\n");
+  chirp(fStart, fStop, nSteps, nPeriods, 1, atan2PiScale, duty, msPause);
+  chirp(fStop, fStart, nSteps, nPeriods, 1, atan2PiScale, duty, msPause);
+
+  printf("atanPi\n");
+  chirp(fStart, fStop, nSteps, nPeriods, 1, atanPiScale, duty, msPause);
+  chirp(fStop, fStart, nSteps, nPeriods, 1, atanPiScale, duty, msPause);
+  printf("...\n");
+  delay(1000);
   */  
 }
