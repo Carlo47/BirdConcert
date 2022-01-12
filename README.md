@@ -380,13 +380,13 @@ double atan2PiScale(int stepNbr, double fStart, double fStop,int nSteps)
 We have implemented a universal chirp function that can generate frequencies that follow a mathemathical rule.
 For comparison, we call all generators and plot the generated frequencies all together in one diagram. The frequency range is swept in 5 steps.
 
-The first diagram shows the frequencies when fStart is smaller than fStop and all frequencies start with increasing values. 
+The first diagram shows the frequencies when fStart is smaller than fStop so that all chirps start with increasing frequencies. 
 
 ![Chirp_All_Up](images/chirp1000-3000-5-80-1-xxxScale-50-200.jpg)
 
 ---
 
-The second diagram shows the frequencies when fStart and fStop are swapped and all frequencies start with decreasing values.
+The second diagram shows the frequencies when fStart and fStop are swapped so that all chirps start with decreasing frequencies.
 
 ![Chirp_All_Down](images/chirp3000-1000-5-80-1-xxxScale-50-200.jpg)
 
@@ -394,4 +394,3 @@ The second diagram shows the frequencies when fStart and fStop are swapped and a
 
 ## Program Code
 There are several "birds" implemented in the program, which are called to sing in random order. Maybe a reader programs an alarm clock which greets him in the morning with a bird concert.
-
