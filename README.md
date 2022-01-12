@@ -292,9 +292,19 @@ double chromaticScale(int stepNbr, double fStart, double fStop,int nSteps)
     return fNext;
 }
 ```
-### Generator for frequencies following a sine
+### 2 Generators for frequencies following a sine
+The range of steps 0 .. nSteps is mapped to 0 .. Pi or to 0 .. 2Pi
 ```
-double sinusScale(int stepNbr, double fStart, double fStop,int nSteps)
+double sinePiScale(int stepNbr, double fStart, double fStop,int nSteps)
+{
+  double fa = (fStop - fStart);  // max. frequency swing
+  const double k = PI / nSteps;
+  double fNext = fStart + fa * sin(k * stepNbr); // get next frequency
+  return fNext;
+}
+```
+```
+double sine2PiScale(int stepNbr, double fStart, double fStop,int nSteps)
 {
   double fm = (fStart + fStop) / 2.0;  // arithmetic mean
   double fa = (fStop - fStart) / 2.0;  // max. frequency swing around fm
@@ -303,9 +313,21 @@ double sinusScale(int stepNbr, double fStart, double fStop,int nSteps)
   return fNext;
 }
 ```
-### Generator for frequencies following a cosine
+
+### 2 Generators for frequencies following a cosine
+The range of steps 0 .. nSteps is mapped to 0 .. Pi or to 0 .. 2Pi
 ```
-double cosinusScale(int stepNbr, double fStart, double fStop,int nSteps)
+double cosinePiScale(int stepNbr, double fStart, double fStop,int nSteps)
+{
+  double fm = (fStart + fStop) / 2.0;  // arithmetic mean
+  double fa = (fStop - fStart) / 2.0;  // max. frequency swing around fm
+  const double k = PI / nSteps;
+  double fNext = fm - fa * cos(k * stepNbr); // get next frequency
+  return fNext;
+}
+```
+```
+double cosin2PiScale(int stepNbr, double fStart, double fStop,int nSteps)
 {
   double fm = (fStart + fStop) / 2.0;  // arithmetic mean
   double fa = (fStop - fStart) / 2.0;  // max. frequency swing around fm
@@ -314,7 +336,8 @@ double cosinusScale(int stepNbr, double fStart, double fStop,int nSteps)
   return fNext;
 }
 ```
-And here are 2 more generators, one linear and another that follows the atan function.
+
+And here is a linear generator
 ### Generator for linearly varying frequencies
 ```
 double linearScale(int stepNbr, double fStart, double fStop,int nSteps)
@@ -324,18 +347,28 @@ double linearScale(int stepNbr, double fStart, double fStop,int nSteps)
   return fNext;
 }
 ```
+The generated frequencies are decreasing because the start frequency is greater than the stop frequency.
+
 ![Chirp_Linear](images/chirp_linear.jpg)
 
 ---
 
-### Generator for frequencies following an arctan
-The step range is maped to the interval 0 ... Pi.
+### 2 Generator for frequencies following an arctan
+The range of steps 0 .. nSteps is mapped to 0 .. Pi or to 0 .. 2Pi
 
 ```
-double atanScale(int stepNbr, double fStart, double fStop,int nSteps)
+double atanPiScale(int stepNbr, double fStart, double fStop,int nSteps)
 {
   double k = (fStop - fStart)/atan(PI);
   double fNext = fStart + k * atan(PI/nSteps * stepNbr);
+  return fNext;
+}
+```
+```
+double atan2PiScale(int stepNbr, double fStart, double fStop,int nSteps)
+{
+  double k = (fStop - fStart)/atan(TWO_PI);
+  double fNext = fStart + k * atan(TWO_PI/nSteps * stepNbr);
   return fNext;
 }
 ```
@@ -344,31 +377,18 @@ double atanScale(int stepNbr, double fStart, double fStop,int nSteps)
 ---
 
 ## Summary
-We have implemented a universal chirp function that can generate frequencies that follow a mathemathical specification.
-For comparison, we call all generators and plot the generated frequencies all together in one diagram. The first diagram shows the frequencies when fStart is smaller than fStop. The frequency range is swept in 5 steps.
-```
-  double fStart = 1000;
-  double fStop  = 3000;
+We have implemented a universal chirp function that can generate frequencies that follow a mathemathical rule.
+For comparison, we call all generators and plot the generated frequencies all together in one diagram. The frequency range is swept in 5 steps.
 
-  chirp(fStart, fStop, 5, 30, 1, linearScale,    50, 100);
-  chirp(fStart, fStop, 5, 30, 1, chromaticScale, 50, 100);
-  chirp(fStart, fStop, 5, 30, 1, sinusScale,     50, 100);
-  chirp(fStart, fStop, 5, 30, 1, cosinusScale,   50, 100);
-  chirp(fStart, fStop, 5, 30, 1, atanScale,      50, 100);
-```  
-![Chirp_All_Up](images/chirp_all_up.jpg)
+The first diagram shows the frequencies when fStart is smaller than fStop and all frequencies start with increasing values. 
+
+![Chirp_All_Up](images/chirp1000-3000-5-80-1-xxxScale-50-200.jpg)
 
 ---
 
-The second diagram shows the frequencies when fStart and fStop are swapped.
-```
-  chirp(fStop, fStart, 5, 30, 1, linearScale,    50, 100); 
-  chirp(fStop, fStart, 5, 30, 1, chromaticScale, 50, 100);
-  chirp(fStop, fStart, 5, 30, 1, sinusScale,     50, 100);
-  chirp(fStop, fStart, 5, 30, 1, cosinusScale,   50, 100);
-  chirp(fStop, fStart, 5, 30, 1, atanScale,      50, 100);
-```
-![Chirp_All_Down](images/chirp_all_down.jpg)
+The second diagram shows the frequencies when fStart and fStop are swapped and all frequencies start with decreasing values.
+
+![Chirp_All_Down](images/chirp3000-1000-5-80-1-xxxScale-50-200.jpg)
 
 ---
 

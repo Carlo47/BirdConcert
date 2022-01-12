@@ -112,7 +112,15 @@ double chromaticScale(int stepNbr, double fStart, double fStop,int nSteps)
     return fNext;
 }
 
-double sineScale(int stepNbr, double fStart, double fStop,int nSteps)
+double sinePiScale(int stepNbr, double fStart, double fStop,int nSteps)
+{
+  double fa = (fStop - fStart);  // max. frequency swing
+  const double k = PI / nSteps;
+  double fNext = fStart + fa * sin(k * stepNbr); // get next frequency
+  return fNext;
+}
+
+double sine2PiScale(int stepNbr, double fStart, double fStop,int nSteps)
 {
   double fm = (fStart + fStop) / 2.0;  // arithmetic mean
   double fa = (fStop - fStart) / 2.0;  // max. frequency swing around fm
@@ -121,19 +129,34 @@ double sineScale(int stepNbr, double fStart, double fStop,int nSteps)
   return fNext;
 }
 
-double cosineScale(int stepNbr, double fStart, double fStop,int nSteps)
+double cosinePiScale(int stepNbr, double fStart, double fStop,int nSteps)
+{
+  double fm = (fStart + fStop) / 2.0;  // arithmetic mean
+  double fa = (fStop - fStart) / 2.0;  // max. frequency swing around fm
+  const double k = PI / nSteps;
+  double fNext = fm - fa * cos(k * stepNbr); // get next frequency
+  return fNext;
+}
+
+double cosine2PiScale(int stepNbr, double fStart, double fStop,int nSteps)
 {
   double fm = (fStart + fStop) / 2.0;  // arithmetic mean
   double fa = (fStop - fStart) / 2.0;  // max. frequency swing around fm
   const double k = TWO_PI / nSteps;
-  double fNext = fm + fa * cos(k * stepNbr); // get next frequency
+  double fNext = fm - fa * cos(k * stepNbr); // get next frequency
   return fNext;
 }
-
-double atanScale(int stepNbr, double fStart, double fStop,int nSteps)
+double atanPiScale(int stepNbr, double fStart, double fStop,int nSteps)
 {
   double k = (fStop - fStart)/atan(PI);
   double fNext = fStart + k * atan(PI/nSteps * stepNbr);
+  return fNext;
+}
+
+double atan2PiScale(int stepNbr, double fStart, double fStop,int nSteps)
+{
+  double k = (fStop - fStart)/atan(TWO_PI);
+  double fNext = fStart + k * atan(TWO_PI/nSteps * stepNbr);
   return fNext;
 }
 
@@ -144,8 +167,8 @@ typedef void (*bird)();  // bird is a pointer to a function taking no parameters
 void bird0()
 {
     chirp(random(1200, 1900), random(4300, 4500), random(10, 42), random(1,5), 5, chromaticScale, 50, random(59, 199));
-    chirp(random(2000, 2050), random(3200, 3400), random(5, 30),  random(2,15), random(4, 10), atanScale, 50, 20 );
-    chirp(1500, 4500, random(50, 100), random(1, 13), random(1, 5), sineScale, 50, 100);
+    chirp(random(2000, 2050), random(3200, 3400), random(5, 30),  random(2,15), random(4, 10), atanPiScale, 50, 20 );
+    chirp(1500, 4500, random(50, 100), random(1, 13), random(1, 5), sine2PiScale, 50, 100);
 }
 
 void bird1()
@@ -155,8 +178,8 @@ void bird1()
 
 void bird2()
 {
-    chirp(random(3500,3900), random(5600,5900), random(3,7), random(5,10), 1, sineScale, 50, random(50, 100));
-    chirp(random(5600,5900), random(3500,3900), random(6,15), random(3,7), 1, cosineScale, 50, random(50, 100));
+    chirp(random(3500,3900), random(5600,5900), random(3,7), random(5,10), 1, sine2PiScale, 50, random(50, 100));
+    chirp(random(5600,5900), random(3500,3900), random(6,15), random(3,7), 1, cosine2PiScale, 50, random(50, 100));
 };
 
 void bird3()
@@ -166,9 +189,9 @@ void bird3()
 
 void bird4()
 {
-    chirp(4000, 4800, 10, 4, random(10, 15), atanScale, 50, 20);
-    chirp(3500, 4300, 15, 10, 1, atanScale, 50, 20);
-    chirp(3500, 3000, 25, 10, 1, sineScale, 50, random(75, 150));
+    chirp(4000, 4800, 10, 4, random(10, 15), atan2PiScale, 50, 20);
+    chirp(3500, 4300, 15, 10, 1, atanPiScale, 50, 20);
+    chirp(3500, 3000, 25, 10, 1, sinePiScale, 50, random(75, 150));
 };
 
  void bird5()
@@ -188,7 +211,7 @@ void bird4()
 
 void bird8()
 {
-    chirp(1320, 3880, 5, 10, 5, sineScale, 50, 100);
+    chirp(1320, 3880, 5, 10, 5, sine2PiScale, 50, 100);
 }
 
 void bird9()
@@ -199,8 +222,8 @@ void bird9()
 
 void bird10()
 {
-  chirp(1440, 1880, 20, 10, random(1,9), atanScale, 5, 10);
-  chirp(1880, 1440, 20, 10, random(1,9), atanScale, 50, 30);
+  chirp(1440, 1880, 20, 10, random(1,9), atanPiScale, 5, 10);
+  chirp(1880, 1440, 20, 10, random(1,9), atanPiScale, 50, 30);
 }
 
 void cuckoo()
@@ -217,13 +240,13 @@ void cuckoo()
 
 void raven()
 {
-  chirp(75,65,8,4,random(2, 6), atanScale, 20, 350);
+  chirp(75,65,8,4,random(2, 6), atanPiScale, 20, 350);
 }
 
 void signet()
 {
-  chirp(440, 1320, 6, 300, 1, cosineScale, 50, 1000);
-  chirp(1320, 440, 6, 300, 1, cosineScale, 50, 3000);
+  chirp(440, 1320, 6, 300, 1, cosine2PiScale, 50, 1000);
+  chirp(1320, 440, 6, 300, 1, cosine2PiScale, 50, 3000);
 }
 
 // Store the birds in an array
