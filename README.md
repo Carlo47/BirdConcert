@@ -120,21 +120,23 @@ Zoomed in at end of chromatic chirp, ending with 440 Hz
 
 Let's combine several chirps to imitate different birds, e.g. the ***cuckoo***.
 ```
-    void cuckoo()
-    {
-    const float minorThird = 1.335;
-    const float cuc = 739.989;          // F#5
-    const float koo = cuc / minorThird; // C#5
-
-    chirp(cuc, cuc, 1, 46, 1, 50, 200);
-    chirp(koo, koo, 1, 52, 1, 50, 830);
-    }
+void cuckoo()
+{
+  const float third = 1.222;     // minorThird = 1.18 ... majorThird = 1.25
+  const float cuc = 667;         //  E4
+  const float koo = cuc / third; // ~C#4
+  for (int i = 1; i < random(1,5); i++)
+  {
+    chirp(cuc, cuc, 1, 46, 1, linearScale, 50, 200);
+    chirp(koo, koo, 1, 52, 1, linearScale, 50, 830);
+  }
+}
 ```
 ![Cuckoo](images/cuckoo.jpg)
 
-Start and end frequency of "cuc" as well as of "koo" are the same. Therefore, the two calls sound 2 * 46 * 1/740 = 124 ms and 2 * 52 * 1/554.3 = 188 ms long with a pause of 200 ms in between.
+Start and end frequency of "cuc" as well as of "koo" are the same. Therefore, the two calls sound 2 * 46 * 1000/667 = 138 ms and 2 * 52 * 1000/546 = 190 ms long with a pause of 200 ms in between, summing up to a total of ~530ms as we can see in the oscillogram.
 
-This does not sound very natural, because the real cuckoo does not call with square waves, but with almost pure sine tones.
+The artificial cuckoo does not sound very real, because the feathered cuckoo calls not with rectangular but with almost pure sine tones.
 
 The cawing of a ***raven*** comes quite close to the real call if we reduce the duty cycle to 20% and call the function like this:
 ```
