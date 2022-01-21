@@ -403,28 +403,30 @@ I had always been fascinated by the function sinc(x) = sin(x)/x with its increas
 ![sincX](images/sincX.jpg)
 
 To which number range should I map my number of frequency steps? -5&pi;..+5&pi; or -3&pi;..+3&pi; maybe also 0..7&pi; or -4&pi;..0? Obviously, I need another parameter in my generator function to specify the multiples of &pi;. 
-
-
+```
+typedef double (*FreqGenSinc)(int stepNbr, double fStart, double fStop,int nSteps, int nPi);
+```
+However, this function has a different signature than the previous definition and compiling the chirp function with a generator with this definition will result in an error message. However, thanks to polymorphism in C++ we can define a second chirp function and thus avoid the problem (see chirpmaker.h). 
 
 ### 👉 A generator spanning -n&pi;..+n&pi;
 
 ```
-  double sincScaleNpi_Npi(int stepNbr, double fStart, double fStop,int nSteps, int nPi)
+double sincScaleNpi_Npi(int stepNbr, double fStart, double fStop,int nSteps, int nPi)
+{
+  double halfRange = nPi * PI;
+  double range = 2 * halfRange;
+
+  auto sinc = [](double x)
   {
-    double halfRange = nPi * PI;
-    double range = 2 * halfRange;
+    return fabs(x) < 0.001 ? 1.0 : sin(x)/x;
+  };
 
-    auto sinc = [](double x)
-    {
-      return fabs(x) < 0.001 ? 1.0 : sin(x)/x;
-    };
-
-    double fa = (fStop - fStart);  // max. frequency swing
-    double k = range / nSteps;
-    // get next frequency
-    double fNext = fStart + fa * sinc(k * stepNbr - halfRange);
-    return fNext;
-  }
+  double fa = (fStop - fStart);  // max. frequency swing
+  double k = range / nSteps;
+  // get next frequency
+  double fNext = fStart + fa * sinc(k * stepNbr - halfRange);
+  return fNext;
+}
 ```
 
 Chirps spanning the range -3&pi;..+3&pi; and -5&pi;..+5&pi; with fStart &lt; fStop
@@ -433,7 +435,7 @@ Chirps spanning the range -3&pi;..+3&pi; and -5&pi;..+5&pi; with fStart &lt; fSt
 
 Chirps spanning the range -3&pi;..+3&pi; and -5&pi;..+5&pi; with fStart &gt; fStop
 
-![sincScaleNpi_Npiswapped](images/chirp_sincScaleNpi_Npi_swapped.jpg)
+![sincScaleNpi_Npi_swapped](images/chirp_sincScaleNpi_Npi_swapped.jpg)
 
 ### 👉 A generator spanning -n&pi;..0;
 
@@ -461,7 +463,7 @@ Chirps spanning the range -3&pi;..0; and -5&pi;..0; with fStart &lt; fStop
 
 Chirps spanning the range -3&pi;..0 and -5&pi;..0 with fStart &gt; fStop
 
-![sincScaleNpi_Npiswapped](images/chirp_sincScaleNpi_0_swapped.jpg)
+![sincScaleNpi_0_swapped](images/chirp_sincScaleNpi_0_swapped.jpg)
 
 ### 👉 A generator spanning the range 0..+n&pi;
 
@@ -485,11 +487,11 @@ double sincScale0_Npi(int stepNbr, double fStart, double fStop, int nSteps, int 
 ```
 Chirps spanning the range 0..+3&pi; and 0..+5&pi; with fStart &lt; fStop
 
-![sincScaleNpi_0](images/chirp_sincScale0_Npi.jpg)
+![sincScale0_Npi](images/chirp_sincScale0_Npi.jpg)
 
 Chirps spanning the range 0..+3&pi; and 0..+5&pi; with fStart &gt; fStop
 
-![sincScaleNpi_Npiswapped](images/chirp_sincScale0_Npi_swapped.jpg)
+![sincScale0_Npi_swapped](images/chirp_sincScale0_Npi_swapped.jpg)
 
 --- 
 
