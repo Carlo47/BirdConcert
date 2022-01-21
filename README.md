@@ -408,7 +408,7 @@ typedef double (*FreqGenSinc)(int stepNbr, double fStart, double fStop,int nStep
 ```
 However, this function has a different signature than the previous definition and compiling the chirp function with a generator with this definition will result in an error message. However, thanks to polymorphism in C++ we can define a second chirp function and thus avoid the problem (see chirpmaker.h). 
 
-### 👉 A generator spanning -n&pi;..+n&pi;
+### 👉 A generator spanning the range -n&pi; .. +n&pi;
 
 ```
 double sincScaleNpi_Npi(int stepNbr, double fStart, double fStop,int nSteps, int nPi)
@@ -437,7 +437,7 @@ Chirps spanning the range -3&pi;..+3&pi; and -5&pi;..+5&pi; with fStart &gt; fSt
 
 ![sincScaleNpi_Npi_swapped](images/chirp_sincScaleNpi_Npi_swapped.jpg)
 
-### 👉 A generator spanning -n&pi;..0;
+### 👉 A generator spanning the range -n&pi; .. 0;
 
 ``` 
 double sincScaleNpi_0(int stepNbr, double fStart, double fStop,int nSteps, int nPi)
@@ -465,7 +465,7 @@ Chirps spanning the range -3&pi;..0 and -5&pi;..0 with fStart &gt; fStop
 
 ![sincScaleNpi_0_swapped](images/chirp_sincScaleNpi_0_swapped.jpg)
 
-### 👉 A generator spanning the range 0..+n&pi;
+### 👉 A generator spanning the range 0 .. +n&pi;
 
 ```
 double sincScale0_Npi(int stepNbr, double fStart, double fStop, int nSteps, int nPi)
