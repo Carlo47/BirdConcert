@@ -226,7 +226,8 @@ runs through the frequencies 440, 660, 1100, 1320, 1100, 660, 440
 
 ---
 ## Phaser
-We can also keep the frequency constant and only change the duty cycle of the square wave. This changes the timbre of the tone. A corresponding function looks like this:
+The presented chirps change the frequency according to mathematical laws. But how does the sound change if the frequency remains the same and only the duty cycle of the square wave changes? Let's try it and write a new function: 
+
 ```
 void phaser(uint32_t freq, int nPeriods, int dutyStart, int dutyEnd, int nChirps, uint32_t msPause)
 {
@@ -249,6 +250,8 @@ void phaser(uint32_t freq, int nPeriods, int dutyStart, int dutyEnd, int nChirps
   }    
 }
 ```
+If we call the function with <code>phaser(500, 20, 1, 99, 1, 2000)</code> , we hear a tone of 500 Hz whose duty cycle is changed from 1 ... 99 %. Each of the 99 tones consists of 20 periods. If we listen carefully, we notice how the timbre of the selected frequency and also the volume changes. This is due to the fact that as the duty cycle changes, the composition of the harmonic frequencies of the sound changes. 
+
 ---
 ## Generalized Chirp
 I was about to finish the  *birdsong* project when I took another look at the various chirp functions. Actually they all do the same, they only differ in how the chirp frequencies are generated. It must be possible to add another parameter "frequency generator" to the basic function and to program only different **frequency generators**. So let's define a type for the frequency generator function:
@@ -269,7 +272,7 @@ void chirp(double fStart, double fStop, int nSteps, int nPeriods, int nChirps, F
   {
     for (int s = 0; s <= nSteps; s++)
     {
-      double fNext = fgen(s, fStart, fStop, nSteps);  //🔴 calling the frequency generator
+      double fNext = fgen(s, fStart, fStop, nSteps);  // 👈 calling the frequency generator
 
       double p = 1000000.0 / fNext;      // calculate the period
       uint32_t tOn  = p * duty / 100.0;  // calculate on and off time
@@ -488,37 +491,7 @@ Chirps spanning the range 0..+3&pi; and 0..+5&pi; with fStart &gt; fStop
 
 ![sincScaleNpi_Npiswapped](images/chirp_sincScale0_Npi_swapped.jpg)
 
----
-
-### Addendum 2
-The presented chirps change the frequency according to mathematical laws. But how does the sound change if the frequency remains the same and only the duty cycle of the square wave changes? Let's try it and write a new function: 
-
-### 👉 A Phaser
-```
-void phaser(uint32_t freq, int nPeriods, 
-            int dutyStart, int dutyEnd, int nChirps, uint32_t msPause)
-{
-  uint32_t p = 1000000/freq;
-
-  auto buz = [](uint32_t usTon, uint32_t usToff){
-    digitalWrite(PIN_BUZZER, HIGH);
-    delayMicroseconds(usTon);
-    digitalWrite(PIN_BUZZER, LOW);
-    delayMicroseconds(usToff);};
-
-  for (int n = 0; n < nChirps; n++) // output nChirps
-  {
-    for (int d = dutyStart; d <= dutyEnd; d++)
-    {
-      uint32_t tOn  = p * d / 100;
-      uint32_t tOff = p - tOn;
-      for (int n = 0; n < nPeriods; n++) buz(tOn, tOff);
-    } 
-    delay(msPause);
-  }    
-}	
-```
-If we call the function with <code>phaser(500, 20, 1, 99, 1, 2000)</code> , we hear a tone of 500 Hz whose duty cycle is changed from 1 ... 99 %. Each of the 99 tones consists of 20 periods. If we listen carefully, we notice how the timbre of the selected frequency and also the volume changes. This is due to the fact that as the duty cycle changes, the composition of the harmonic frequencies of the sound changes. 
+--- 
 
 ## Program Code
 With all this knowledge, I implemented various "birds" in the program that are called to sing in random order. Now I wanted to let the birds whistle in another program. Soon I realized that my few lines of code would get lost in the extensive code of the sound generation. Therefore I put this part into a universal class ***Chirpmaker***. Now the application of the sound functions was reduced to a few lines: 
