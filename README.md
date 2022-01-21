@@ -394,5 +394,152 @@ The second diagram shows the frequencies when fStart and fStop are swapped so th
 
 ---
 
+### Addendum 1
+I had always been fascinated by the function sinc(x) = sin(x)/x with its increasing and decreasing waveform. How does an artificial bird sound whose beep starts with an increasing vibrato, changes into a sharp beep and fades out with a decreasing vibrato? But remember, it's not the volume, it's the pitch. 
+
+![sincX](images/sincX.jpg)
+
+To which number range should I map my number of frequency steps? -5&pi;..+5&pi; or -3&pi;..+3&pi; maybe also 0..7&pi; or -4&pi;..0? Obviously, I need another parameter in my generator function to specify the multiples of &pi;. 
+
+
+
+### 👉 A generator spanning -n&pi;..+n&pi;
+
+```
+  double sincScaleNpi_Npi(int stepNbr, double fStart, double fStop,int nSteps, int nPi)
+  {
+    double halfRange = nPi * PI;
+    double range = 2 * halfRange;
+
+    auto sinc = [](double x)
+    {
+      return fabs(x) < 0.001 ? 1.0 : sin(x)/x;
+    };
+
+    double fa = (fStop - fStart);  // max. frequency swing
+    double k = range / nSteps;
+    // get next frequency
+    double fNext = fStart + fa * sinc(k * stepNbr - halfRange);
+    return fNext;
+  }
+```
+
+Chirps spanning the range -3&pi;..+3&pi; and -5&pi;..+5&pi; with fStart &lt; fStop
+
+![sincScaleNpi_Npi](images/chirp_sincScaleNpi_Npi.jpg)
+
+Chirps spanning the range -3&pi;..+3&pi; and -5&pi;..+5&pi; with fStart &gt; fStop
+
+![sincScaleNpi_Npiswapped](images/chirp_sincScaleNpi_Npi_swapped.jpg)
+
+### 👉 A generator spanning -n&pi;..0;
+
+``` 
+double sincScaleNpi_0(int stepNbr, double fStart, double fStop,int nSteps, int nPi)
+{
+  double range = nPi * PI;
+
+  auto sinc = [](double x)
+  {
+    return fabs(x) < 0.001 ? 1.0 : sin(x)/x;
+  };
+
+  double fa = (fStop - fStart);  // max. frequency swing
+  double k = range / nSteps;
+  // get next frequency
+  double fNext = fStart + fa * sinc(k * stepNbr - range); 
+  return fNext;
+}
+```
+
+Chirps spanning the range -3&pi;..0; and -5&pi;..0; with fStart &lt; fStop
+
+![sincScaleNpi_0](images/chirp_sincScaleNpi_0.jpg)
+
+Chirps spanning the range -3&pi;..0 and -5&pi;..0 with fStart &gt; fStop
+
+![sincScaleNpi_Npiswapped](images/chirp_sincScaleNpi_0_swapped.jpg)
+
+### 👉 A generator spanning the range 0..+n&pi;
+
+```
+double sincScale0_Npi(int stepNbr, double fStart, double fStop, int nSteps, int nPi)
+{
+  double range = nPi * PI;
+
+  auto sinc = [](double x)
+  {
+    return fabs(x) < 0.001 ? 1.0 : sin(x)/x;
+  };
+  double swap = fStart; fStart = fStop; fStop = swap;
+
+  double fa = (fStop - fStart);  // max. frequency swing
+  double k = range / nSteps;
+  double fNext = fStart + fa * sinc(k * stepNbr); // get next frequency
+  //printf("%2d  %0.2f\n", stepNbr, fNext);
+  return fNext;
+}
+```
+Chirps spanning the range 0..+3&pi; and 0..+5&pi; with fStart &lt; fStop
+
+![sincScaleNpi_0](images/chirp_sincScale0_Npi.jpg)
+
+Chirps spanning the range 0..+3&pi; and 0..+5&pi; with fStart &gt; fStop
+
+![sincScaleNpi_Npiswapped](images/chirp_sincScale0_Npi_swapped.jpg)
+
+---
+
+### Addendum 2
+The presented chirps change the frequency according to mathematical laws. But how does the sound change if the frequency remains the same and only the duty cycle of the square wave changes? Let's try it and write a new function: 
+
+### 👉 A Phaser
+```
+void phaser(uint32_t freq, int nPeriods, 
+            int dutyStart, int dutyEnd, int nChirps, uint32_t msPause)
+{
+  uint32_t p = 1000000/freq;
+
+  auto buz = [](uint32_t usTon, uint32_t usToff){
+    digitalWrite(PIN_BUZZER, HIGH);
+    delayMicroseconds(usTon);
+    digitalWrite(PIN_BUZZER, LOW);
+    delayMicroseconds(usToff);};
+
+  for (int n = 0; n < nChirps; n++) // output nChirps
+  {
+    for (int d = dutyStart; d <= dutyEnd; d++)
+    {
+      uint32_t tOn  = p * d / 100;
+      uint32_t tOff = p - tOn;
+      for (int n = 0; n < nPeriods; n++) buz(tOn, tOff);
+    } 
+    delay(msPause);
+  }    
+}	
+```
+If we call the function with <code>phaser(500, 20, 1, 99, 1, 2000)</code> , we hear a tone of 500 Hz whose duty cycle is changed from 1 ... 99 %. Each of the 99 tones consists of 20 periods. If we listen carefully, we notice how the timbre of the selected frequency and also the volume changes. This is due to the fact that as the duty cycle changes, the composition of the harmonic frequencies of the sound changes. 
+
 ## Program Code
-There are several "birds" implemented in the program, which are called to sing in random order. Maybe a reader programs an alarm clock which greets him in the morning with a bird concert.
+With all this knowledge, I implemented various "birds" in the program that are called to sing in random order. Now I wanted to let the birds whistle in another program. Soon I realized that my few lines of code would get lost in the extensive code of the sound generation. Therefore I put this part into a universal class ***Chirpmaker***. Now the application of the sound functions was reduced to a few lines: 
+```
+#include "Chirpmaker.h"
+
+const uint8_t PIN_BUZZER = GPIO_NUM_4;
+Chirpmaker cm(PIN_BUZZER); // Creates an object that emits sounds at pin 4
+
+void setup()
+{
+  // Your initialization code
+  cm.signet();  // Call a signet to signal the end of setup
+}
+
+void loop() 
+{
+  cm.phoneCall(7);
+  cm.birdConcert(3000);
+  cm.chirp(1000, 3000, 70, 100, 5, sincScaleNpi_Npi, 50, 500);
+}
+```
+
+Maybe a reader programs an alarm clock which greets him in the morning with a bird concert.
