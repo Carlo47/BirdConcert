@@ -397,7 +397,7 @@ The second diagram shows the frequencies when fStart and fStop are swapped so th
 
 ---
 
-### Addendum 1
+### Addendum
 I had always been fascinated by the function sinc(x) = sin(x)/x with its increasing and decreasing waveform. How does an artificial bird sound whose beep starts with an increasing vibrato, changes into a sharp beep and fades out with a decreasing vibrato? But remember, it's not the volume, it's the pitch. 
 
 ![sincX](images/sincX.jpg)
