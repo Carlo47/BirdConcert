@@ -1,13 +1,5 @@
 # include "Chirpmaker.h"
 
-void Chirpmaker::birdVoice(uint8_t birdNbr, uint32_t msPause)
-{
-    Bird p = Chirpmaker::_birds[birdNbr];
-    //printf("Bird %d is singing\n", birdNbr);
-    (this->*p)();   // or (this->*Chirpmaker::_birds[birdNbr])();
-    delay(msPause);
-}
-
 /**
  * Simulate the chirp of a bird. Start with fStart and reach fStop in n steps.
  * Each individual frequency is composed of n periods. freq(i) = k * freq(i-1)
@@ -16,7 +8,7 @@ void Chirpmaker::birdVoice(uint8_t birdNbr, uint32_t msPause)
  * fStart    Chirp starts with this frequency
  * fStop     Chirp ends   with this frequency
  * nSteps    The frequency interval is divided into n steps 
- * nPeriods  Every frequency contains n periods
+ * nPeriods  Every tone consists of n periods
  * nChirps   n chirps are played
  * fgen      frequency generator to step through the frequency range
  * duty      duty cycle (1..99 %) of a period 
@@ -318,6 +310,21 @@ void Chirpmaker::_blackbird()
   chirp(random(3000,2000), random(1500,1200), random(75,120), random(2,9), random(1, 4), cosine2PiScale, 50, 80);
 }
 
+/**
+ * Let the bird with birdNbr sing
+ * birdNbr    number of the bird (index into birds table) 
+ * msPause    pause after bird call
+ * 
+ * Note how the bird is called by a pointer to a method
+ */
+void Chirpmaker::birdVoice(uint8_t birdNbr, uint32_t msPause)
+{
+    Bird p = Chirpmaker::_birds[birdNbr];
+    //printf("Bird %d is singing\n", birdNbr);
+    (this->*p)();   // or (this->*Chirpmaker::_birds[birdNbr])();
+    delay(msPause);
+}
+
 void Chirpmaker::cuckoo()
 {
   birdVoice(11, 20);
@@ -348,7 +355,7 @@ void Chirpmaker::birdConcert(uint32_t msPause)
    {
        int b = random(_nbrBirds);
        Bird p = Chirpmaker::_birds[b];
-       printf("Bird %d is singing\n", b);
+       printf("Bird %2d is singing\n", b);
        (this->*p)();
    }
     delay(msPause);

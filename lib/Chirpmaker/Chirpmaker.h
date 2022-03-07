@@ -1,3 +1,5 @@
+#ifndef _CHIRPMAKER_H_
+#define _CHIRPMAKER_H_
 #include <Arduino.h>
 
 // typedef double (*FreqGen)(int stepNbr, double fStart, double fStop,int nSteps); // is equivalent to "using FreqGen = ... "
@@ -77,3 +79,4 @@ class Chirpmaker
         Bird _birds[15];
         int _nbrBirds = sizeof(_birds) / sizeof(_birds[0]);
 };
+#endif

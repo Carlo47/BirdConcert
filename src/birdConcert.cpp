@@ -36,6 +36,7 @@ void loop()
 {
   printf("Phone call\n");
   cm.phoneCall(7);
+  delay(1000);
 
   printf("Birdconcert\n");
   cm.birdConcert(3000);
