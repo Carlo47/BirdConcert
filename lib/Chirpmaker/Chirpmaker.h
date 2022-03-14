@@ -17,7 +17,7 @@ double atan2PiScale(int stepNbr, double fStart, double fStop,int nSteps);
 
 double sincScaleNpi_Npi(int stepNbr, double fStart, double fStop,int nSteps, int nPi);
 double sincScale0_Npi(int stepNbr, double fStart, double fStop,int nSteps, int nPi);
-double sincScaleNpi_0Scale(int stepNbr, double fStart, double fStop,int nSteps, int nPi);
+double sincScaleNpi_0(int stepNbr, double fStart, double fStop,int nSteps, int nPi);
 
 class Chirpmaker
 {
